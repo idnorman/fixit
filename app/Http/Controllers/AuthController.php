@@ -23,8 +23,29 @@ class AuthController extends Controller
 
         $user = User::create([
             'name'      => $attr['name'],
+            'email'     => $attr['email'],
             'password'  => Hash::make($attr['password']),
-            'email'     => $attr['email']
+        ]);
+
+        return $this->success([
+            'token'     => $user->createToken('auth_token')->plainTextToken
+        ]);
+
+    }
+
+    public function partnerRegister(Request $request){
+
+        $attr = $request->validate([   
+            'name'      => 'required|string|max:255',
+            'email'     => 'required|string|email|unique:users,email',
+            'password'  => 'required|string|min:6|confirmed'
+        ]);
+
+        $user = User::create([
+            'name'      => $attr['name'],
+            'email'     => $attr['email'],
+            'password'  => Hash::make($attr['password']),
+            'role'      => 'partner'
         ]);
 
         return $this->success([
@@ -43,8 +64,9 @@ class AuthController extends Controller
         if (!Auth::attempt($attr)) {
             return $this->error('Credentials not match', 401);
         }
-
+        
         return $this->success([
+            'user'      => auth()->user(),
             'token'     => auth()->user()->createToken('auth_token')->plainTextToken
         ]);
 

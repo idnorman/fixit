@@ -13,14 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('partner_service', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->string('password');
-            $table->string('phone')->nullable();
-            $table->enum('role', ['customer', 'partner'])->default('customer');
-            $table->rememberToken();
+            $table->string('price');
+            $table->bigInteger('partner_id')->unsigned();
+            $table->foreign('partner_id')->references('id')->on('partners');
+            $table->bigInteger('service_id')->unsigned();
+            $table->foreign('service_id')->references('id')->on('services');
             $table->timestamps();
         });
     }
@@ -32,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('partner_service');
     }
 };
