@@ -49,6 +49,13 @@ class AuthController extends Controller
             'role'      => 'partner'
         ]);
 
+        $partner = Partner::create([
+            'name'    => $request->partner_name,
+            'user_id' => $user->id,
+            'phone'   => $request->phone,
+            'address' => $request->address
+        ]);
+
         return $this->success([
             'token'     => $user->createToken('auth_token')->plainTextToken
         ]);

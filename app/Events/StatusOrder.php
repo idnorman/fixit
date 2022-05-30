@@ -12,7 +12,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class StatusOrder
+class StatusOrder implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -37,6 +37,6 @@ class StatusOrder
      */
     public function broadcastOn()
     {
-        return new Channel('customer.'.$this->user->id);
+        return new Channel('customer.'.$this->transaction->user_id);
     }
 }

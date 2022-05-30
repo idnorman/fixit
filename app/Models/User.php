@@ -47,4 +47,8 @@ class User extends Authenticatable
     public function partner(){
         return $this->hasOne(Partner::class);
     }
+
+    public function transaction(){
+        return $this->hasMany(Transaction::class);
+    }
 }

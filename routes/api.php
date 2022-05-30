@@ -24,6 +24,7 @@ use App\Http\Controllers\UserController;
 
 Route::get('test', [DashboardController::class, 'test']);
 Route::get('get-user-by-partner/{id}', [UserController::class, 'getUserByPartner']);
+
 Route::post('order/create', [TransactionController::class, 'create'])->middleware('auth:sanctum');
 
 Route::group([
@@ -79,6 +80,8 @@ Route::group([
     Route::post('create', [TransactionController::class, 'create']);
     Route::post('accept', [TransactionController::class, 'accept']);
     Route::post('reject', [TransactionController::class, 'reject']);
+    Route::get('get-transaction/{id}', [TransactionController::class, 'getTransaction']);
+    Route::get('get-transactions-by-user/{id}', [TransactionController::class, 'getTransactionsByUser']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

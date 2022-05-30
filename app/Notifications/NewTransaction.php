@@ -14,18 +14,17 @@ class NewTransaction extends Notification
 {
     use Queueable;
     
-    public $user, $transaction, $transactionDetail;
+    public $user, $transaction;
 
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct(User $user, Transaction $transaction, TransactionDetail $transactionDetail)
+    public function __construct(User $user, Transaction $transaction)
     {
         $this->user              = $user;
         $this->transaction       = $transaction;
-        $this->transactionDetail = $transactionDetail;
     }
 
     /**

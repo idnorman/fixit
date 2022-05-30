@@ -74,20 +74,31 @@ class PartnerController extends Controller
     }
 
     public function getPartnersByService($id){
+        
+        // $partners = Service::has('partner_service.partner')->with('partner_service.partner')->where('id', $id)->first();
+        // $arrPartner = [];
+        // $i = 0;
+        // if(isset($partners->partner_service)){
+        //     foreach($partners->partner_service as $ps){  
+        //         $arrPartner[$i] = $ps->partner;
+        //         $i++;
+        //     }
+        // }
 
-        $partners = Partner::with([
-            'partner_service' => function($query) use($id){
-                $query->select('id', 'price', 'partner_id', 'service_id')->where('service_id', $id);
-            }, 
-            'partner_service.service' => function($query){
-                $query->select('id', 'name');
-            },
-            'user' => function($query){
-                $query->select('id', 'name');
-            }])
-            ->select('id', 'name', 'address', 'user_id')
-            ->get();
+        // $partners = Service::has('partner_service.partner')->with('partner_service.partner', 'partner_service.service')->where('partner_service.service_id', $id)->first();
 
+        $partners = PartnerService::with(["partner","service"])->whereHas('service',function ($query) use ($id){
+                        $query->where('id',$id);
+                    })->get();
+        // $partners = Partner::with(
+        //     [
+        //         'partner_service' => function ($query) use ($id){
+        //             $query->where('service_id')->
+        //         }
+        //     ]
+        // );
+            // $partners = collect((array)$partners);
+        
         return $this->success(['partners' => $partners]);
     }
 

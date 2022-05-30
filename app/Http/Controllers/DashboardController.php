@@ -51,11 +51,14 @@ class DashboardController extends Controller
     }
 
     public function test(){
-        $user = User::first();
+        $tes = PartnerService::with('partner', 'service')->select('id', 'price', 'partner_id', 'service_id')->where('service_id', 1)->groupBy('id', 'price', 'partner_id', 'service_id')->get();
+
+        
+        // $tes = $tes->partner_service->where('service_id', 2);
         
         // $user->notify(new NewBook($user));
         // broadcast(new NewOrder($user));
         // event(new NewOrder($user));	
-        return $this->success(['user' => auth()->user()]);
+        return $this->success(['tes' => $tes]);
     }
 }
