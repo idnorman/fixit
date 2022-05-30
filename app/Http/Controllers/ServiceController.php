@@ -11,7 +11,7 @@ class ServiceController extends Controller
 {
     use ApiResponser;
     public function getServicesByPartner($id){
-        $services = PartnerService::with('service')->where('id', $id);
+        $services = PartnerService::with('service')->select('service_id', 'partner_id', 'price', 'id')->where('partner_id', $id)->groupBy('service_id', 'partner_id', 'price', 'id')->get();
 
         return $this->success(['services' => $services]);
     }

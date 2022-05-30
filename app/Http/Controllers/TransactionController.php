@@ -70,5 +70,19 @@ class TransactionController extends Controller
         return $this->success(['transactions' => $transactions]);
     }
 
+    public function getTransactionsByPartner($id){
+
+            $transactions = Transaction::select('*', 'transactions.id as transaction_id', 'partners.name as partner_name')
+                ->join('partner_service', "partner_service.id", '=', 'transactions.partner_service_id')
+                ->join('partners', function($q) use ($id){
+                    $q->on('partners.id', '=', 'partner_service.partner_id')
+                    ->where('partners.id', '=', $id);
+                })
+                ->get();
+
+
+        return $this->success(['transactions' => $transactions]);
+    }
+
 
 }

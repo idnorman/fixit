@@ -82,6 +82,14 @@ Route::group([
     Route::post('reject', [TransactionController::class, 'reject']);
     Route::get('get-transaction/{id}', [TransactionController::class, 'getTransaction']);
     Route::get('get-transactions-by-user/{id}', [TransactionController::class, 'getTransactionsByUser']);
+    Route::get('get-transactions-by-partner/{id}', [TransactionController::class, 'getTransactionsByPartner']);
+});
+
+Route::group([
+    'prefix' => 'service',
+    'middleware' => 'auth:sanctum'
+], function(){
+    Route::get('get-services-by-partner/{id}', [ServiceController::class, 'getServicesByPartner']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
