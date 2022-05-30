@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 
-class Partner extends Model
+class Transaction extends Model
 {
     use HasFactory, Notifiable;
 
@@ -14,11 +14,7 @@ class Partner extends Model
         'id'
     ];
 
-    public function user(){
-        return $this->belongsTo(User::class);
-    }
-
-    public function partner_service(){
-        return $this->hasMany(PartnerService::class);
+    public function transaction_detail(){
+        return $this->hasMany(TransactionDetail::class);
     }
 }

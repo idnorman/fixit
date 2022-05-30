@@ -22,4 +22,8 @@ class PartnerService extends Model
     public function service(){
         return $this->belongsTo(Service::class);
     }
+
+    public function transaction_detail(){
+        return $this->hasMany(PartnerService::class);
+    }
 }

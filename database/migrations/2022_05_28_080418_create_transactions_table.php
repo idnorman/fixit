@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('location')->nullable();
             $table->string('latitude')->nullable();
             $table->string('longitude')->nullable();
+            $table->enum('is_accepted', ['waiting', 'accepted', 'rejected'])->default('waiting');
             $table->tinyInteger('is_paid')->default(0);
             $table->bigInteger('user_id')->unsigned();
             $table->foreign('user_id')->references('id')->on('users');

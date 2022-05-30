@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Partner;
 use Illuminate\Http\Request;
 
 use App\Models\User;
@@ -65,9 +66,12 @@ class AuthController extends Controller
             return $this->error('Credentials not match', 401);
         }
         
+        $partner = Partner::where('user_id', auth()->user()->id)->first();
+        
         return $this->success([
-            'user'      => auth()->user(),
-            'token'     => auth()->user()->createToken('auth_token')->plainTextToken
+            'user'              => auth()->user(),
+            'partner'        => $partner,
+            'token'             => auth()->user()->createToken('auth_token')->plainTextToken
         ]);
 
     }
