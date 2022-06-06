@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Partner;
 use App\Models\PartnerService;
 use App\Models\Service;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 use App\Traits\ApiResponser;
@@ -49,7 +50,10 @@ class PartnerController extends Controller
             ]
         );
 
-        return $this->success([], 'Data berhasil diubah');
+        $user = User::find(auth()->user()->id);
+        $user->update(['role' => 'partner']);
+
+        return $this->success(['partner_id' => $partner->id], 'Data berhasil diubah');
     }
 
     public function getPartner($id){
@@ -75,29 +79,10 @@ class PartnerController extends Controller
 
     public function getPartnersByService($id){
         
-        // $partners = Service::has('partner_service.partner')->with('partner_service.partner')->where('id', $id)->first();
-        // $arrPartner = [];
-        // $i = 0;
-        // if(isset($partners->partner_service)){
-        //     foreach($partners->partner_service as $ps){  
-        //         $arrPartner[$i] = $ps->partner;
-        //         $i++;
-        //     }
-        // }
-
-        // $partners = Service::has('partner_service.partner')->with('partner_service.partner', 'partner_service.service')->where('partner_service.service_id', $id)->first();
-
         $partners = PartnerService::with(["partner","service"])->whereHas('service',function ($query) use ($id){
                         $query->where('id',$id);
                     })->get();
-        // $partners = Partner::with(
-        //     [
-        //         'partner_service' => function ($query) use ($id){
-        //             $query->where('service_id')->
-        //         }
-        //     ]
-        // );
-            // $partners = collect((array)$partners);
+
         
         return $this->success(['partners' => $partners]);
     }

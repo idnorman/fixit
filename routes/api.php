@@ -23,6 +23,7 @@ use App\Http\Controllers\UserController;
 */
 
 Route::get('test', [DashboardController::class, 'test']);
+Route::get('test2', [DashboardController::class, 'test2']);
 Route::get('get-user-by-partner/{id}', [UserController::class, 'getUserByPartner']);
 
 Route::post('order/create', [TransactionController::class, 'create'])->middleware('auth:sanctum');
@@ -80,6 +81,8 @@ Route::group([
     Route::post('create', [TransactionController::class, 'create']);
     Route::post('accept', [TransactionController::class, 'accept']);
     Route::post('reject', [TransactionController::class, 'reject']);
+    Route::post('finish', [TransactionController::class, 'finish']);
+    Route::post('paid', [TransactionController::class, 'paid']);
     Route::get('get-transaction/{id}', [TransactionController::class, 'getTransaction']);
     Route::get('get-transactions-by-user/{id}', [TransactionController::class, 'getTransactionsByUser']);
     Route::get('get-transactions-by-partner/{id}', [TransactionController::class, 'getTransactionsByPartner']);
@@ -89,7 +92,15 @@ Route::group([
     'prefix' => 'service',
     'middleware' => 'auth:sanctum'
 ], function(){
+    Route::get('get-all-services', [PartnerServiceController::class, 'getAllServices']);
     Route::get('get-services-by-partner/{id}', [ServiceController::class, 'getServicesByPartner']);
+});
+
+Route::group([
+    'prefix' => 'user',
+    'middleware' => 'auth:sanctum'
+], function(){
+    Route::post('update', [UserController::class, 'update']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

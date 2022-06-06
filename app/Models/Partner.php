@@ -22,7 +22,4 @@ class Partner extends Model
         return $this->hasMany(PartnerService::class);
     }
 
-    public function transaction(){
-        return $this->hasMany(Transaction::class);
-    }
 }

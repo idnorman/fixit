@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Device;
 use App\Models\Partner;
 use Illuminate\Http\Request;
 
@@ -27,6 +28,13 @@ class AuthController extends Controller
             'email'     => $attr['email'],
             'password'  => Hash::make($attr['password']),
         ]);
+
+        Device::create(
+            [
+                'token' => $request->device_token,
+                'user_id' => auth()->user()->id
+            ]
+        );
 
         return $this->success([
             'token'     => $user->createToken('auth_token')->plainTextToken
@@ -56,8 +64,16 @@ class AuthController extends Controller
             'address' => $request->address
         ]);
 
+        Device::create(
+            [
+                'token' => $request->device_token,
+                'user_id' => auth()->user()->id
+            ]
+        );
+
         return $this->success([
-            'token'     => $user->createToken('auth_token')->plainTextToken
+            'token'     => $user->createToken('auth_token')->plainTextToken,
+            'device_token'      => $request->device_token
         ]);
 
     }
@@ -74,21 +90,29 @@ class AuthController extends Controller
         }
         
         $partner = Partner::where('user_id', auth()->user()->id)->first();
-        
+
+        Device::create(
+            [
+                'token' => $request->device_token,
+                'user_id' => auth()->user()->id
+            ]
+        );
+
         return $this->success([
             'user'              => auth()->user(),
-            'partner'        => $partner,
-            'token'             => auth()->user()->createToken('auth_token')->plainTextToken
+            'partner'           => $partner,
+            'token'             => auth()->user()->createToken('auth_token')->plainTextToken,
+            'device_token'      => $request->device_token
         ]);
 
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
         auth()->user()->tokens()->delete();
-
+        $device = Device::where('user_id', '=', auth()->user()->id);
+        $device->delete();
         return $this->success([], 'Token revoked');
-
     }
 
 }

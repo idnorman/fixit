@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\NewOrder;
 use App\Events\StatusOrder;
+use App\Events\StatusPaid;
 use App\Models\Partner;
 use App\Models\PartnerService;
 use App\Models\Transaction;
@@ -11,11 +12,12 @@ use App\Models\TransactionDetail;
 use App\Models\User;
 use App\Notifications\NewTransaction;
 use App\Traits\ApiResponser;
+use App\Traits\Firebase;
 use Illuminate\Http\Request;
 
 class TransactionController extends Controller
 {
-    use ApiResponser;
+    use ApiResponser, Firebase;
  
     public function create(Request $request){
 
@@ -23,18 +25,51 @@ class TransactionController extends Controller
         $datetime       = date('Y-m-d H:i:s');
 
         $transaction    = Transaction::create([
-            'date'          => $datetime,
-            'user_id'       => $userId,
-            'partner_service_id'    => $request->partner_service_id
+            'date'                  => $datetime,
+            'user_id'               => $userId,
+            'partner_service_id'    => $request->partner_service_id,
+            'note'                  => $request->note,
+            // 'partner_note'          => $request->partner_note,
+            // 'customer_note'         => $request->customer_note,
+            // 'waiting_note'          => $request->waiting_note,
+            // 'accepted_note'         => $request->accepted_note,
+            // 'rejected_note'         => $request->rejected_note,
+            // 'finished_note'         => $request->finished_note
         ]);
         
         $transaction = Transaction::with('user', 'partner_service.partner', 'partner_service.service')->where('id', $transaction->id)->first();
         
         $message = $transaction->user->name . " memesan layanan servis " . $transaction->partner_service->service->name;
-        broadcast(new NewOrder($transaction, $message));
+
+        $notification = [
+            'title' =>'Pesanan baru',
+            'body' => $message,
+            'icon' =>'myIcon',
+            'sound' => 'default'
+        ];
+        $extraNotificationData = [
+            "message" => $notification,
+            "moredata" => $transaction
+        ];
+
+        $token = User::with('device')->where('id', $transaction->partner_service->partner->user_id)->get()->pluck('device')->flatten();
+        $tokenList = [];
+
+        foreach($token as $t){
+            array_push($tokenList, $t->token);
+        }
+
+        $fcmNotification = [
+            'registration_ids' => $tokenList, //multple token array
+            // 'to'        => $token, //single token
+            'notification' => $notification,
+            'data' => $extraNotificationData
+        ];
+
+        $this->firebaseNotification($fcmNotification);
 
         return $this->success(['transaction' => $transaction]);
-    }
+    }    
 
     public function accept(Request $request){
         $transaction = Transaction::find($request->transaction_id);
@@ -42,20 +77,144 @@ class TransactionController extends Controller
         
         $transaction = Transaction::with('user', 'partner_service.partner', 'partner_service.service')->where('id', $transaction->id)->first();
 
-        $message = "Pesanan servis " . $transaction->partner_service->service->name . " telah diterima";
-        broadcast(new StatusOrder($message, $transaction));
-        return $this->success(['transaction' => $transaction], 'Permintaan anda diterima, kurir akan segera menuju lokasi');
+        $message = "Booking reparasi " . $transaction->partner_service->service->name . "telah diterima penyedia jasa. Ketuk untuk melihat rincian";
+        
+        $notification = [
+            'title' =>'Pesanan diterima',
+            'body' => $message,
+            'icon' =>'myIcon',
+            'sound' => 'default'
+        ];
+        $extraNotificationData = [
+            "message" => $notification,
+            "moredata" => $transaction
+        ];
+        
+        $token = User::with('device')->where('id', $transaction->user->id)->get()->pluck('device')->flatten();
+        $tokenList = [];
+        
+        foreach($token as $t){
+            array_push($tokenList, $t->token);
+        }
+
+        $fcmNotification = [
+            'registration_ids' => $tokenList, //multple token array
+            // 'to'        => $token, //single token
+            'notification' => $notification,
+            'data' => $extraNotificationData
+        ];
+
+        $this->firebaseNotification($fcmNotification);
+
+        return $this->success(['transaction' => $transaction], $message);
     }
 
     public function reject(Request $request){
         $transaction = Transaction::find($request->transaction_id);
-        $transaction->update(['is_accepted' => 'accepted']);
+        $transaction->update(['is_accepted' => 'rejected']);
         
         $transaction = Transaction::with('user', 'partner_service.partner', 'partner_service.service')->where('id', $transaction->id)->first();
 
-        $message = "Pesanan servis " . $transaction->partner_service->service->name . " telah diterima";
-        broadcast(new StatusOrder($message, $transaction));
-        return $this->success(['transaction' => $transaction], 'Permintaan anda diterima, kurir akan segera menuju lokasi');
+        $message = "Pesanan reparasi " . $transaction->partner_service->service->name . " ditolak. Permintaan anda telah dibatalkan";
+        $notification = [
+            'title' =>'Pesanan ditolak',
+            'body' => $message,
+            'icon' =>'myIcon',
+            'sound' => 'default'
+        ];
+        $extraNotificationData = [
+            "message" => $notification,
+            "moredata" => $transaction
+        ];
+
+        $token = User::with('device')->where('id', $transaction->user->id)->get()->pluck('device')->flatten();
+        $tokenList = [];
+
+        foreach($token as $t){
+            array_push($tokenList, $t->token);
+        }
+        
+        $fcmNotification = [
+            'registration_ids' => $tokenList, //multple token array
+            // 'to'        => $token, //single token
+            'notification' => $notification,
+            'data' => $extraNotificationData
+        ];
+
+        $this->firebaseNotification($fcmNotification);
+        return $this->success(['transaction' => $transaction], $message);
+    }
+
+    public function finish(Request $request){
+        $transaction = Transaction::find($request->transaction_id);
+        $transaction->update(['is_accepted' => 'finished']);
+        
+        $transaction = Transaction::with('user', 'partner_service.partner', 'partner_service.service')->where('id', $transaction->id)->first();
+
+        $message = "Pesanan reparasi " . $transaction->partner_service->service->name . " telah selesai. terimakasih";
+        $notification = [
+            'title' =>'Pesanan selesai',
+            'body' => $message,
+            'icon' =>'myIcon',
+            'sound' => 'default'
+        ];
+        $extraNotificationData = [
+            "message" => $notification,
+            "moredata" => $transaction
+        ];
+
+        $token = User::with('device')->where('id', $transaction->user->id)->get()->pluck('device')->flatten();
+        $tokenList = [];
+
+        foreach($token as $t){
+            array_push($tokenList, $t->token);
+        }
+
+        $fcmNotification = [
+            'registration_ids' => $tokenList, //multple token array
+            // 'to'        => $token, //single token
+            'notification' => $notification,
+            'data' => $extraNotificationData
+        ];
+
+        $this->firebaseNotification($fcmNotification);
+        return $this->success(['transaction' => $transaction], $message);
+    }
+
+    public function paid(Request $request){
+        $transaction = Transaction::find($request->transaction_id);
+        $transaction->update(['is_paid' => '1']);
+        
+        $transaction = Transaction::with('user', 'partner_service.partner', 'partner_service.service')->where('id', $transaction->id)->first();
+
+        $message = "Pesanan reparasi " . $transaction->partner_service->service->name . " telah dibayar. Terimakasih";
+        $notification = [
+            'title' =>'Status Pembayaran',
+            'body' => $message,
+            'icon' =>'myIcon',
+            'sound' => 'default'
+        ];
+        $extraNotificationData = [
+            "message" => $notification,
+            "moredata" => $transaction
+        ];
+
+        $token = User::with('device')->where('id', $transaction->user->id)->get()->pluck('device')->flatten();
+        $tokenList = [];
+
+        foreach($token as $t){
+            array_push($tokenList, $t->token);
+        }
+
+        $fcmNotification = [
+            'registration_ids' => $tokenList, //multple token array
+            // 'to'        => $token, //single token
+            'notification' => $notification,
+            'data' => $extraNotificationData
+        ];
+
+        $this->firebaseNotification($fcmNotification);
+        return $this->success(['transaction' => $transaction], $message);
     }
 
     public function getTransaction($id){
@@ -72,14 +231,11 @@ class TransactionController extends Controller
 
     public function getTransactionsByPartner($id){
 
-            $transactions = Transaction::select('*', 'transactions.id as transaction_id', 'partners.name as partner_name')
-                ->join('partner_service', "partner_service.id", '=', 'transactions.partner_service_id')
-                ->join('partners', function($q) use ($id){
-                    $q->on('partners.id', '=', 'partner_service.partner_id')
-                    ->where('partners.id', '=', $id);
-                })
-                ->get();
-
+        $transactions = Transaction::whereHas('partner_service', function ($q) use ($id){
+            $q->whereHas('partner', function($q) use ($id){
+                $q->where('id', $id);
+            });
+        })->with('partner_service.partner.user', 'partner_service.service', 'user')->get();
 
         return $this->success(['transactions' => $transactions]);
     }

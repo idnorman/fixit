@@ -39,4 +39,9 @@ class StatusOrder implements ShouldBroadcast
     {
         return new Channel('customer.'.$this->transaction->user_id);
     }
+
+    public function broadcastAs()
+    {
+        return 'status-order';
+    }
 }

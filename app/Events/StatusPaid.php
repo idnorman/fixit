@@ -2,11 +2,7 @@
 
 namespace App\Events;
 
-use App\Models\Partner;
-use App\Models\PartnerService;
-use App\Models\Service;
 use App\Models\Transaction;
-use App\Models\TransactionDetail;
 use App\Models\User;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -16,21 +12,22 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class NewOrder implements ShouldBroadcast
+class StatusPaid implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $transaction, $message;
+    public $message, $transaction;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(Transaction $transaction, $message)
+
+    public function __construct($message, Transaction $transaction)
     {
-        $this->message           = $message;
-        $this->transaction       = $transaction;
+        $this->message     = $message;
+        $this->transaction = $transaction;
     }
 
     /**
@@ -40,11 +37,11 @@ class NewOrder implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new Channel('partner.' . $this->transaction->partner_service->partner_id);
+        return new Channel('customer.'.$this->transaction->user_id);
     }
 
     public function broadcastAs()
     {
-        return 'new-order';
+        return 'status-paid';
     }
 }

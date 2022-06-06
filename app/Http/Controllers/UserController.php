@@ -91,16 +91,19 @@ class UserController extends Controller
 
         $attr['password'] = $user->password;
         if($request->password){
-            $data['password'] = Hash::make($request->password);
+            $attr['password'] = Hash::make($request->password);
         }
 
         $user->update([
             'name'      => $attr['name'],
-            'password'  => $attr['password']
+            'password'  => $attr['password'],
+            'phone'     => $attr['phone'],
+            'address'   => $request->address
         ]);
 
         return $this->success([
-            'token'     => $user->createToken('auth_token')->plainTextToken
+            // 'token'     => $user->createToken('auth_token')->plainTextToken
+            'user' => $user
         ]);
     }
 
