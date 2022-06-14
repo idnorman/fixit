@@ -38,6 +38,8 @@ class TransactionController extends Controller
         ]);
         
         $transaction = Transaction::with('user', 'partner_service.partner', 'partner_service.service')->where('id', $transaction->id)->first();
+        $transaction['intended_for'] = "partner";
+        
         
         $message = $transaction->user->name . " memesan layanan servis " . $transaction->partner_service->service->name;
 
@@ -76,8 +78,9 @@ class TransactionController extends Controller
         $transaction->update(['is_accepted' => 'accepted']);
         
         $transaction = Transaction::with('user', 'partner_service.partner', 'partner_service.service')->where('id', $transaction->id)->first();
+        $transaction['intended_for'] = "customer";
 
-        $message = "Booking reparasi " . $transaction->partner_service->service->name . "telah diterima penyedia jasa. Ketuk untuk melihat rincian";
+        $message = "Booking reparasi " . $transaction->partner_service->service->name . " telah diterima penyedia jasa. Ketuk untuk melihat rincian";
         
         $notification = [
             'title' =>'Pesanan diterima',
@@ -114,6 +117,7 @@ class TransactionController extends Controller
         $transaction->update(['is_accepted' => 'rejected']);
         
         $transaction = Transaction::with('user', 'partner_service.partner', 'partner_service.service')->where('id', $transaction->id)->first();
+        $transaction['intended_for'] = "customer";
 
         $message = "Pesanan reparasi " . $transaction->partner_service->service->name . " ditolak. Permintaan anda telah dibatalkan";
         $notification = [
@@ -150,6 +154,7 @@ class TransactionController extends Controller
         $transaction->update(['is_accepted' => 'finished']);
         
         $transaction = Transaction::with('user', 'partner_service.partner', 'partner_service.service')->where('id', $transaction->id)->first();
+        $transaction['intended_for'] = "customer";
 
         $message = "Pesanan reparasi " . $transaction->partner_service->service->name . " telah selesai. terimakasih";
         $notification = [
@@ -225,7 +230,7 @@ class TransactionController extends Controller
     }
 
     public function getTransactionsByUser($id){
-        $transactions = Transaction::with('user', 'partner_service.partner', 'partner_service.service')->where('user_id', $id)->get();
+        $transactions = Transaction::with('user', 'partner_service.partner', 'partner_service.service')->where('user_id', $id)->orderBy('id', 'desc')->get();
         return $this->success(['transactions' => $transactions]);
     }
 
@@ -235,7 +240,7 @@ class TransactionController extends Controller
             $q->whereHas('partner', function($q) use ($id){
                 $q->where('id', $id);
             });
-        })->with('partner_service.partner.user', 'partner_service.service', 'user')->get();
+        })->with('partner_service.partner.user', 'partner_service.service', 'user')->orderBy('id', 'desc')->get();
 
         return $this->success(['transactions' => $transactions]);
     }

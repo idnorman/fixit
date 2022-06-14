@@ -53,8 +53,10 @@ Route::group([
     'prefix'        => 'partner-service',
     'middleware'    => 'auth:sanctum'
 ], function(){
+    Route::get('get-partner-service/{id}', [PartnerServiceController::class, 'getPartnerService']);
     Route::get('create', [PartnerServiceController::class, 'create']);
     Route::post('store', [PartnerServiceController::class, 'store']);
+    Route::post('update', [PartnerServiceController::class, 'update']);
 });
 
 Route::group([

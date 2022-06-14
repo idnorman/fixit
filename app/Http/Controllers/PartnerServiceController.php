@@ -18,6 +18,11 @@ class PartnerServiceController extends Controller
         //
     }
 
+    public function getPartnerService($id){
+        $partnerService = PartnerService::find($id);
+        return $this->success(['partner-service' => $partnerService]);
+    }
+
     public function getAllServices(){
         $services = PartnerService::with('service')->get();
         return $this->success(['services' => $services]);

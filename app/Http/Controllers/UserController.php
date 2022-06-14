@@ -77,27 +77,32 @@ class UserController extends Controller
     {
         $user = User::find(auth()->user()->id);
 
-        if($request->password){
-            $passwordRules = 'confirmed';
-        }else{
-            $passwordRules = '';
-        }
+        // if($request->password){
+        //     $passwordRules = 'confirmed';
+        // }else{
+        //     $passwordRules = '';
+        // }
 
         $attr = $request->validate([   
             'name'      => 'required|string|max:255',
-            'phone'     => 'required|numeric',
-            'password'  => $passwordRules
+            // 'phone'     => 'required|numeric',
+            // 'password'  => $passwordRules
         ]);
 
-        $attr['password'] = $user->password;
-        if($request->password){
-            $attr['password'] = Hash::make($request->password);
+        // $attr['password'] = $user->password;
+        // if($request->password){
+        //     $attr['password'] = Hash::make($request->password);
+        // }
+
+        $attr['email'] = $user->email;
+        if($request->email){
+            $attr['email'] = $request->email;
         }
 
         $user->update([
             'name'      => $attr['name'],
-            'password'  => $attr['password'],
-            'phone'     => $attr['phone'],
+            'email'     => $attr['email'],
+            'phone'     => $request->phone,
             'address'   => $request->address
         ]);
 

@@ -14,12 +14,12 @@ return new class extends Migration
     public function up()
     {
         Schema::table('transactions', function (Blueprint $table) {
-            $table->text('partner_note')->nullable();
-            $table->text('customer_note')->nullable();
-            $table->text('waiting_note')->nullable();
-            $table->text('accepted_note')->nullable();
-            $table->text('rejected_note')->nullable();
-            $table->text('finished_note')->nullable();
+            // $table->text('partner_note')->nullable();
+            // $table->text('customer_note')->nullable();
+            // $table->text('waiting_note')->nullable();
+            // $table->text('accepted_note')->nullable();
+            // $table->text('rejected_note')->nullable();
+            // $table->text('finished_note')->nullable();
         });
     }
 
